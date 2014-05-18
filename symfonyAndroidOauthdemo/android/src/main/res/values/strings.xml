@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">Symfony/Android Oauth demo</string>
+    <string name="hello_world">Hello world!</string>
+    <string name="action_add">Add</string>
+    <string name="description">Description</string>
+    <string name="title">Title</string>
+    <string name="create">create</string>
+    <string name="cancel">cancel</string>
+
+</resources>
