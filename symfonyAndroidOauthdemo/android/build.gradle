@@ -21,5 +21,9 @@ android {
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
     // You must install or update the Support Repository through the SDK manager to use this dependency.
-    compile 'com.android.support:appcompat-v7:19.+'
+    //compile 'com.android.support:appcompat-v7:19.+'
+    // Because the android-oauth library has a dependency on v4-r7 we need to use that instead...
+    compile 'com.google.android:support-v4:r7'
+    compile 'com.wu-man:android-oauth-client:0.0.3'
+    compile 'com.google.code.gson:gson:2.2.4'
 }
