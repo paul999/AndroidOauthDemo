@@ -8,10 +8,10 @@ import com.android.volley.Response;
 import com.android.volley.toolbox.HttpHeaderParser;
 import com.google.api.client.auth.oauth2.Credential;
 
-import java.util.HashMap;
 import java.util.Map;
 
 public class PostRequest extends AbstractRequest<String> {
+
     public PostRequest(String host, Credential creds, String url, Map<String, String> headers,
                        Response.Listener<String> listener, Response.ErrorListener errorListener, Object send) {
         super(Method.POST, url, host, creds, headers, listener, errorListener);
@@ -19,6 +19,10 @@ public class PostRequest extends AbstractRequest<String> {
         this.bodyObject = send;
     }
 
+    @Override
+    public String getBodyContentType() {
+        return "application/json";
+    }
     @Override
     protected Response<String> parseNetworkResponse(NetworkResponse response) {
         try {

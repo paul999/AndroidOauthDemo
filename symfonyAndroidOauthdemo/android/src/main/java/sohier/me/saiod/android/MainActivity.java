@@ -1,7 +1,6 @@
 package sohier.me.saiod.android;
 
 import android.app.Activity;
-import android.app.ActionBar;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.DialogFragment;
@@ -9,14 +8,12 @@ import android.app.Fragment;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.Message;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.os.Build;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
@@ -112,18 +109,19 @@ public class MainActivity extends Activity {
     @Override
     protected void onPause()
     {
+        super.onPause();
         datasource.close();
     }
     @Override
     protected void onStop()
     {
+        super.onStop();
         datasource.close();
     }
 
     private void refreshData()
     {
         refreshToken(new CallBackInterface() {
-
             @Override
             public void call() {
                 final Response.Listener<DemoResult> rs = new Response.Listener<DemoResult>(){
@@ -135,9 +133,7 @@ public class MainActivity extends Activity {
                         Log.d("saiod", "size: " + demoResult.demos.length);
                     }
                 };
-
                 GsonRequest<DemoResult> rq = new GsonRequest<DemoResult>(Request.Method.GET, API_HOST, creds, "/demos", DemoResult.class, null, rs, new Response.ErrorListener() {
-
                     @Override
                     public void onErrorResponse(VolleyError error) {
                         Log.d("saiod", "Error during request to the server: " + error);
@@ -145,8 +141,6 @@ public class MainActivity extends Activity {
                         throw new RuntimeException();
                     }
                 });
-
-
                 queue.add(rq);
             }
         });
@@ -222,7 +216,7 @@ public class MainActivity extends Activity {
             return rootView;
         }
     }
-    public static class CreateDemoDialog extends DialogFragment {
+    public class CreateDemoDialog extends DialogFragment {
         @Override
         public Dialog onCreateDialog(Bundle savedInstanceState) {
             AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
@@ -240,18 +234,37 @@ public class MainActivity extends Activity {
                     .setPositiveButton(R.string.create, new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int id) {
-
-
-                            final Demo d = datasource.createDemo(title.getText().toString(), desc.getText().toString());
-                            Runnable r = new Runnable() {
+                            refreshToken(new CallBackInterface() {
                                 @Override
-                                public void run() {
-                                    adapter.add(d);
-                                    adapter.notifyDataSetChanged();
-                                    Log.d("saiod", "changed.");
+                                public void call() {
+
+                                    Demo data = new Demo();
+                                    data.setDescription(desc.getText().toString());
+                                    data.setTitle(title.getText().toString());
+
+                                    final Response.Listener<String> rs = new Response.Listener<String>(){
+                                        @Override
+                                        public void onResponse(String demoResult) {
+                                            Log.d("saiod", "Got data..." + demoResult);
+
+                                            // Lets call refreshData :)
+                                            refreshData();
+                                        }
+                                    };
+                                    PostRequest rq = new PostRequest(API_HOST, creds, "/demos", null, rs, new Response.ErrorListener(){
+                                        @Override
+                                        public void onErrorResponse(VolleyError error) {
+                                            Log.d("saiod", "Error during request to the server: " + error);
+
+                                            error.printStackTrace();
+
+                                            throw new RuntimeException();
+                                        }
+                                    }, data);
+
+                                    queue.add(rq);
                                 }
-                            };
-                            handler.post(r);
+                            });
                         }
                     })
                     .setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
@@ -289,7 +302,6 @@ public class MainActivity extends Activity {
                     return "http://android.local/";
                 }
             };
-
 
             SharedPreferencesCredentialStore credentialStore =
                     new SharedPreferencesCredentialStore(this.getApplication(),

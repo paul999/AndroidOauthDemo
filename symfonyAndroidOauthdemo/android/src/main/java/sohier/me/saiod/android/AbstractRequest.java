@@ -8,6 +8,7 @@ import com.android.volley.Response;
 import com.google.api.client.auth.oauth2.Credential;
 import com.google.gson.Gson;
 
+import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -48,14 +49,13 @@ public abstract class AbstractRequest<T> extends Request<T> {
     public AbstractRequest(int method, String path, String host, Credential creds, Map<String, String> headers, Response.Listener<T> listener, Response.ErrorListener errorListener) {
         super(method, makeUrl(host, creds, path), errorListener);
 
-        this.headers = headers;
-        this.listener = listener;
-
         if (headers == null) {
             headers = new HashMap<String, String>();
         }
         headers.put("Accept", "application/json");
-        headers.put("Content-type", "application/json");
+
+        this.headers = headers;
+        this.listener = listener;
     }
 
     @Override
@@ -76,8 +76,17 @@ public abstract class AbstractRequest<T> extends Request<T> {
             return super.getBody();
         }
         Gson gson = new Gson();
-        return gson.toJson(bodyObject).getBytes();
-    }
 
+        try {
+            Log.d("saiod", new String(gson.toJson(bodyObject).getBytes("utf-8")));
+
+            byte[] bt = gson.toJson(bodyObject).getBytes("utf-8");
+            return bt;
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+            throw new RuntimeException(e);
+
+        }
+    }
 }
 

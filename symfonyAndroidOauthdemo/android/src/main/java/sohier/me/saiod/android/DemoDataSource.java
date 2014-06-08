@@ -29,12 +29,11 @@ public class DemoDataSource {
         dbHelper.close();
     }
 
-    public Demo createDemo(String title, String description) {
+    public Demo createDemo(Demo demo) {
         ContentValues values = new ContentValues();
-        values.put(DBHelper.DEMO_TITLE, title);
-        values.put(DBHelper.DEMO_DESCRIPTION, description);
-
-        Log.e("test", DBHelper.TABLE_DEMO + " " + title + " " + description);
+        values.put(DBHelper.DEMO_TITLE, demo.getDescription());
+        values.put(DBHelper.DEMO_DESCRIPTION, demo.getDescription());
+        values.put(DBHelper.DEMO_SERVER_ID, demo.getId());
 
         long insertId = database.insert(DBHelper.TABLE_DEMO, null,
                 values);
