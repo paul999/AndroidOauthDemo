@@ -57,7 +57,9 @@ public class MainActivity extends Activity {
     private static ArrayAdapter<Demo> adapter;
     private static Handler handler = new Handler() {};
     private static DemoDataSource datasource;
-    private RequestQueue queue;
+    private static RequestQueue queue;
+
+    private static List<Demo> values;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -119,7 +121,7 @@ public class MainActivity extends Activity {
         datasource.close();
     }
 
-    private void refreshData()
+    private static void refreshData()
     {
         refreshToken(new CallBackInterface() {
             @Override
@@ -131,8 +133,56 @@ public class MainActivity extends Activity {
                         Log.d("saiod", "Got data...");
 
                         Log.d("saiod", "size: " + demoResult.demos.length);
+
+                        ArrayList<Long> shouldExists = new ArrayList<Long>();
+
+                        for (Demo demo : demoResult.demos)
+                        {
+                            Demo dm = datasource.getDemo(demo.getId());
+
+                            if (dm != null)
+                            {
+                                // It was found in the database, lets update it :)
+                                dm.setDescription(demo.getDescription());
+                                dm.setTitle(demo.getTitle());
+                            }
+                            else
+                            {
+                                dm = demo;
+                            }
+                            datasource.createOrUpdateDemo(dm);
+                            shouldExists.add(demo.getId());
+                        }
+
+                        List<Demo> ex = datasource.getAllDemos();
+
+                        for (Demo dm : ex)
+                        {
+                            if (!shouldExists.contains(dm.getId()))
+                            {
+                                datasource.deleteDemo(dm);
+                            }
+                        }
+                        if (handler != null)
+                        {
+                            final List<Demo> list = datasource.getAllDemos();
+                            Runnable run = new Runnable() {
+                                @Override
+                                public void run() {
+                                    Log.d("saiod", "In runnable :D");
+
+                                    values.clear(); // remove all existing items
+                                    values.addAll(list);
+                                    adapter.notifyDataSetChanged();
+
+                                }
+                            };
+                            handler.post(run);
+                        }
                     }
                 };
+
+
                 GsonRequest<DemoResult> rq = new GsonRequest<DemoResult>(Request.Method.GET, API_HOST, creds, "/demos", DemoResult.class, null, rs, new Response.ErrorListener() {
                     @Override
                     public void onErrorResponse(VolleyError error) {
@@ -171,7 +221,6 @@ public class MainActivity extends Activity {
      * A placeholder fragment containing a simple view.
      */
     public static class PlaceholderFragment extends Fragment {
-
         public PlaceholderFragment() {
         }
 
@@ -180,15 +229,13 @@ public class MainActivity extends Activity {
                 Bundle savedInstanceState) {
             View rootView = inflater.inflate(R.layout.fragment_main, container, false);
 
-            ArrayList<String> data = new ArrayList<String>();
-
-            List<Demo> values;
-
             if (creds != null)  {
+                Log.d("saiod", "creds not null");
                 values = datasource.getAllDemos();
             }
             else
             {
+                Log.d("saiod", "creds is null, not adding yet?");
                 values = new ArrayList<Demo>();
             }
 
@@ -196,6 +243,19 @@ public class MainActivity extends Activity {
 
             ListView dataList = (ListView) rootView.findViewById(R.id.listView);
             dataList.setAdapter(adapter);
+
+            dataList.setClickable(true);
+
+            dataList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                @Override
+                public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                    Bundle bl = new Bundle();
+                    bl.putSerializable("demo", adapter.getItem(position));
+                    CreateDemoDialog cdd = new CreateDemoDialog();
+                    cdd.setArguments(bl);
+                    cdd.show(getFragmentManager(), "");
+                }
+            });
 
             dataList.setLongClickable(true);
 
@@ -205,9 +265,29 @@ public class MainActivity extends Activity {
                                                int pos, long id) {
                     Log.v("long clicked","pos: " + pos);
 
-                    datasource.deleteDemo(adapter.getItem(pos));
-                    adapter.remove(adapter.getItem(pos));
-                    adapter.notifyDataSetChanged();
+                    final Demo item = adapter.getItem(pos);
+
+                    refreshToken(new CallBackInterface() {
+                        @Override
+                        public void call() {
+                            final Response.Listener<String> rs = new Response.Listener<String>() {
+                                @Override
+                                public void onResponse(String string) {
+                                    refreshData(); // We just call refreshData :)
+                                }
+                            } ;
+
+                            DeleteRequest rq = new DeleteRequest("/demos/" + item.getId(), API_HOST, creds, null, rs, new Response.ErrorListener() {
+                                @Override
+                                public void onErrorResponse(VolleyError error) {
+                                    Log.d("saiod", "Error during request to the server: " + error);
+
+                                    throw new RuntimeException();
+                                }
+                            });
+                            queue.add(rq);
+                        }
+                    });
 
                     return true;
                 }
@@ -216,9 +296,21 @@ public class MainActivity extends Activity {
             return rootView;
         }
     }
-    public class CreateDemoDialog extends DialogFragment {
+    public static class CreateDemoDialog extends DialogFragment {
+        Demo demo = null;
+        public CreateDemoDialog()
+        {
+
+        }
+
         @Override
         public Dialog onCreateDialog(Bundle savedInstanceState) {
+
+            Bundle bl = getArguments();
+            try {
+                demo = (Demo) bl.getSerializable("demo");
+            }catch(NullPointerException e){}
+
             AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
             // Get the layout inflater
             LayoutInflater inflater = getActivity().getLayoutInflater();
@@ -228,6 +320,13 @@ public class MainActivity extends Activity {
             View vw = inflater.inflate(R.layout.dialog_add_demo, null);
             final EditText title = (EditText)vw.findViewById(R.id.title);
             final EditText desc = (EditText)vw.findViewById(R.id.description);
+
+            if (demo != null)
+            {
+                // Set fields :).
+                title.setText(demo.getTitle());
+                desc.setText(demo.getDescription());
+            }
 
             builder.setView(vw)
                     // Add action buttons
@@ -242,7 +341,7 @@ public class MainActivity extends Activity {
                                     data.setDescription(desc.getText().toString());
                                     data.setTitle(title.getText().toString());
 
-                                    final Response.Listener<String> rs = new Response.Listener<String>(){
+                                    final Response.Listener<String> rs = new Response.Listener<String>() {
                                         @Override
                                         public void onResponse(String demoResult) {
                                             Log.d("saiod", "Got data..." + demoResult);
@@ -251,7 +350,9 @@ public class MainActivity extends Activity {
                                             refreshData();
                                         }
                                     };
-                                    PostRequest rq = new PostRequest(API_HOST, creds, "/demos", null, rs, new Response.ErrorListener(){
+                                    Request rq;
+
+                                    Response.ErrorListener err = new Response.ErrorListener() {
                                         @Override
                                         public void onErrorResponse(VolleyError error) {
                                             Log.d("saiod", "Error during request to the server: " + error);
@@ -260,8 +361,13 @@ public class MainActivity extends Activity {
 
                                             throw new RuntimeException();
                                         }
-                                    }, data);
+                                    };
 
+                                    if (demo == null) {
+                                        rq = new PostRequest(API_HOST, creds, "/demos", null, rs, err, data);
+                                    } else {
+                                        rq = new PutRequest(API_HOST, creds, "/demos/" + demo.getId(), null, rs, err, data);
+                                    }
                                     queue.add(rq);
                                 }
                             });
@@ -352,7 +458,7 @@ public class MainActivity extends Activity {
      *
      * @param cb Callback with the actual API call.
      */
-    public void refreshToken(final CallBackInterface cb) {
+    public static void refreshToken(final CallBackInterface cb) {
         new Thread() {
             @Override
             public void run() {

@@ -8,20 +8,20 @@ import android.util.Log;
 public class DBHelper extends SQLiteOpenHelper {
 
     public static final String TABLE_DEMO = "demo";
-    public static final String DEMO_ID = "_id";
+    public static final String DEMO_LOCAL_ID = "_id";
     public static final String DEMO_TITLE = "title";
     public static final String DEMO_DESCRIPTION = "description";
     public static final String DEMO_SERVER_ID = "server_id";
 
     private static final String DATABASE_NAME = "demo.db";
-    private static final int DATABASE_VERSION = 2;
+    private static final int DATABASE_VERSION = 3;
 
     // Database creation sql statement
     private static final String DATABASE_CREATE = "create table "
-            + TABLE_DEMO + "(" + DEMO_ID
+            + TABLE_DEMO + "(" + DEMO_LOCAL_ID
             + " integer primary key autoincrement, " + DEMO_TITLE
             + " text not null, " + DEMO_DESCRIPTION + " text not null, "
-            + " integer " + DEMO_SERVER_ID + ");";
+            + DEMO_SERVER_ID + " integer);";
 
     public DBHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);

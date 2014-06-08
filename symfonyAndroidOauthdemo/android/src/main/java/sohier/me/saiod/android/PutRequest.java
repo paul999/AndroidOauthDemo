@@ -19,6 +19,10 @@ public class PutRequest  extends AbstractRequest<String>{
     }
 
     @Override
+    public String getBodyContentType() {
+        return "application/json";
+    }
+    @Override
     protected Response<String> parseNetworkResponse(NetworkResponse response) {
         try {
             if (response.statusCode == 204) {

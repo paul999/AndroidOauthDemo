@@ -1,10 +1,13 @@
 package sohier.me.saiod.android;
 
-public class Demo {
+import java.io.Serializable;
+
+public class Demo  implements Serializable{
 
     private String title;
     private String description;
     private long id;
+    private long localId;
 
     public String getTitle() {
         return title;
@@ -33,5 +36,13 @@ public class Demo {
     public String toString()
     {
         return this.title;
+    }
+
+    public long getLocalId() {
+        return localId;
+    }
+
+    public void setLocalId(long localId) {
+        this.localId = localId;
     }
 }
