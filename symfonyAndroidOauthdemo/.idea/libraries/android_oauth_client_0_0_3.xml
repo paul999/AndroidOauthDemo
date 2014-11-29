@@ -4,6 +4,8 @@
       <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/com.wu-man/android-oauth-client/0.0.3/ff6342a876a5bf7d4bb1e6f750e080e6881401af/android-oauth-client-0.0.3.jar!/" />
     </CLASSES>
     <JAVADOC />
-    <SOURCES />
+    <SOURCES>
+      <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/com.wu-man/android-oauth-client/0.0.3/1795194183225610ebec96be352728367641a263/android-oauth-client-0.0.3-sources.jar!/" />
+    </SOURCES>
   </library>
 </component>

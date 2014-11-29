@@ -4,6 +4,8 @@
       <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/com.google.oauth-client/google-oauth-client/1.15.0-rc/490b8d24391d94dafaeb21bc5d51741231d2bd43/google-oauth-client-1.15.0-rc.jar!/" />
     </CLASSES>
     <JAVADOC />
-    <SOURCES />
+    <SOURCES>
+      <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/com.google.oauth-client/google-oauth-client/1.15.0-rc/e0a11aad77369529802358fc62221b797ce4d07a/google-oauth-client-1.15.0-rc-sources.jar!/" />
+    </SOURCES>
   </library>
 </component>

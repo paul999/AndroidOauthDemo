@@ -4,6 +4,8 @@
       <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/com.google.api-client/google-api-client-android/1.15.0-rc/f7218f7aa2da59e34ec7f9f25942332833a6ce9d/google-api-client-android-1.15.0-rc.jar!/" />
     </CLASSES>
     <JAVADOC />
-    <SOURCES />
+    <SOURCES>
+      <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/com.google.api-client/google-api-client-android/1.15.0-rc/5a9cfda28e90fc8c5a6365486969cd00c127a43c/google-api-client-android-1.15.0-rc-sources.jar!/" />
+    </SOURCES>
   </library>
 </component>
